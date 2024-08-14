@@ -1,0 +1,55 @@
+---
+- name: Install Datadog Agent on Fedora and configure to collect Linux OS metrics
+  hosts: all
+  become: yes
+
+  vars:
+    datadog_api_key: "give_me_your_dd_key"
+
+  tasks:
+    - name: Install necessary dependencies on Fedora
+      dnf:
+        name:
+          - dnf-plugins-core
+          - curl
+        state: present
+
+    - name: Add Datadog's DNF repository on Fedora
+      copy:
+        dest: /etc/yum.repos.d/datadog.repo
+        content: |
+          [datadog]
+          name = Datadog, Inc.
+          baseurl = https://yum.datadoghq.com/stable/7/x86_64/
+          enabled = 1
+          gpgcheck = 1
+          gpgkey = https://keys.datadoghq.com/DATADOG_RPM_KEY.public
+
+    - name: Install Datadog Agent on Fedora
+      dnf:
+        name: datadog-agent
+        state: present
+
+    - name: Configure Datadog Agent with API key
+      copy:
+        dest: /etc/datadog-agent/datadog.yaml
+        content: |
+          api_key: "{{ datadog_api_key }}"
+          tags:
+            - "env:production"
+          logs_enabled: true
+          process_config:
+            enabled: "true"
+      notify: restart datadog-agent
+
+    - name: Enable and start Datadog Agent service
+      systemd:
+        name: datadog-agent
+        enabled: yes
+        state: started
+
+  handlers:
+    - name: restart datadog-agent
+      systemd:
+        name: datadog-agent
+        state: restarted
