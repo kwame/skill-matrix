@@ -1,10 +1,24 @@
 ---
 - name: Install Datadog Agent on Fedora and configure to collect Linux OS metrics
-  hosts: all
+  hosts: localhost
   become: yes
 
   vars:
     datadog_api_key: "give_me_your_dd_key"
+    datadog_site: "us5.datadoghq.com"
+    datadog_checks:
+      process:
+        init_config:
+        instances:
+          - name: ssh
+            search_string: ['ssh', 'sshd']
+          - name: syslog
+            search_string: ['rsyslog']
+            cpu_check_interval: 0.2
+            exact_match: true
+            ignore_denied_access: true
+
+
 
   tasks:
     - name: Install necessary dependencies on Fedora
