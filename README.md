@@ -12,7 +12,8 @@ Beyond my professional pursuits, my interests in photography and music further c
 - 🔭 I'm currently working as a DevOps Engineer as a consultant for a US based company.
 - 📝 I like to share the knowledge and my experiences on my personal site [informatux.net](https://informatux.net)
 - 🌐 Proud OpenSource advocate for about 22 years, I started using Linux in '97 when I was in college [OpenSource.com](https://opensource.com/)
-- ![fa-camera](camera-retro-solid.svg) When I'm away (in some sort) of computers I like to explore the world with my camera and snap as many pictures as I can, you can see some of portfolio in  [Flickr](https://www.flickr.com/photos/informatux/albums/)
+- <img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/6.x/svgs/solid/crown.svg" width="50" height="50">
+ When I'm away (in some sort) of computers I like to explore the world with my camera and snap as many pictures as I can, you can see some of portfolio in  [Flickr](https://www.flickr.com/photos/informatux/albums/)
 
 
 ## Tech Stack
