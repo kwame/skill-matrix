@@ -1,0 +1,92 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_REGION = 'us-east-1' // Update to your region
+        INSTANCE_TYPE = 't2.micro' // Modify based on requirements
+        KEY_NAME = 'your-ec2-key'  // Replace with your EC2 key name
+        SECURITY_GROUP = 'sg-xxxxxx'  // Update with your security group ID
+        SUBNET_ID = 'subnet-xxxxxx'  // Update with your subnet ID
+        ANSIBLE_PLAYBOOK = 'apache-playbook.yml'
+        RDS_IDENTIFIER = 'aurora-db'
+        RDS_DB_NAME = 'mydatabase'
+        RDS_USERNAME = 'admin'
+        RDS_PASSWORD = 'password'
+    }
+
+    stages {
+        stage('Provision EC2 Instance') {
+            steps {
+                script {
+                    // Launch EC2 instance
+                    sh '''
+                    aws ec2 run-instances \
+                    --image-id ami-xxxxxx \  # Replace with your AMI ID
+                    --count 1 \
+                    --instance-type $INSTANCE_TYPE \
+                    --key-name $KEY_NAME \
+                    --security-group-ids $SECURITY_GROUP \
+                    --subnet-id $SUBNET_ID \
+                    --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=ApacheServer}]' > ec2-instance.json
+                    '''
+
+                    // Fetch the instance ID and Public IP
+                    script {
+                        def ec2Details = readJSON file: 'ec2-instance.json'
+                        env.INSTANCE_ID = ec2Details.Instances[0].InstanceId
+                        env.PUBLIC_IP = sh(script: "aws ec2 describe-instances --instance-id $INSTANCE_ID --query 'Reservations[0].Instances[0].PublicIpAddress' --output text", returnStdout: true).trim()
+                    }
+                }
+            }
+        }
+
+        stage('Provision RDS Aurora') {
+            steps {
+                script {
+                    // Create Aurora DB Cluster
+                    sh '''
+                    aws rds create-db-cluster \
+                    --db-cluster-identifier $RDS_IDENTIFIER \
+                    --engine aurora \
+                    --master-username $RDS_USERNAME \
+                    --master-user-password $RDS_PASSWORD \
+                    --db-subnet-group-name mydbsubnetgroup \
+                    --vpc-security-group-ids $SECURITY_GROUP
+                    '''
+
+                    // Create DB Instance
+                    sh '''
+                    aws rds create-db-instance \
+                    --db-instance-identifier $RDS_IDENTIFIER-instance \
+                    --db-cluster-identifier $RDS_IDENTIFIER \
+                    --engine aurora \
+                    --db-instance-class db.r5.large
+                    '''
+                }
+            }
+        }
+
+        stage('Install Apache via Ansible') {
+            steps {
+                script {
+                    // Wait for the EC2 instance to be in a running state
+                    sh "aws ec2 wait instance-running --instance-ids $INSTANCE_ID"
+
+                    // Ensure Ansible can connect to the EC2 instance
+                    sh '''
+                    ansible-playbook -i "$PUBLIC_IP," --private-key=~/.ssh/$KEY_NAME.pem $ANSIBLE_PLAYBOOK
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Cleaning up...'
+            // Optionally terminate the EC2 instance
+            sh "aws ec2 terminate-instances --instance-ids $INSTANCE_ID"
+        }
+    }
+}
+

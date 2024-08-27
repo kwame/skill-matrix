@@ -1,0 +1,26 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: Update apt and install Apache
+      apt:
+        name: apache2
+        state: present
+        update_cache: yes
+
+    - name: Start Apache service
+      service:
+        name: apache2
+        state: started
+        enabled: yes
+
+    - name: Install MySQL client to connect to Aurora
+      apt:
+        name: mysql-client
+        state: present
+
+    - name: Create a test HTML file
+      copy:
+        dest: /var/www/html/index.html
+        content: "<html><h1>Apache Server is Running!</h1></html>"
+
