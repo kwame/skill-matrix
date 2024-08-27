@@ -2,11 +2,11 @@ pipeline {
     agent any
 
     environment {
-        AWS_REGION = 'us-east-1' // Update to your region
-        INSTANCE_TYPE = 't2.micro' // Modify based on requirements
-        KEY_NAME = 'your-ec2-key'  // Replace with your EC2 key name
-        SECURITY_GROUP = 'sg-xxxxxx'  // Update with your security group ID
-        SUBNET_ID = 'subnet-xxxxxx'  // Update with your subnet ID
+        AWS_REGION = 'us-east-1'
+        INSTANCE_TYPE = 't2.micro'
+        KEY_NAME = 'your-ec2-key'
+        SECURITY_GROUP = 'sg-xxxxxx'
+        SUBNET_ID = 'subnet-xxxxxx'
         ANSIBLE_PLAYBOOK = 'apache-playbook.yml'
         RDS_IDENTIFIER = 'aurora-db'
         RDS_DB_NAME = 'mydatabase'
@@ -69,10 +69,8 @@ pipeline {
         stage('Install Apache via Ansible') {
             steps {
                 script {
-                    // Wait for the EC2 instance to be in a running state
                     sh "aws ec2 wait instance-running --instance-ids $INSTANCE_ID"
-
-                    // Ensure Ansible can connect to the EC2 instance
+                   
                     sh '''
                     ansible-playbook -i "$PUBLIC_IP," --private-key=~/.ssh/$KEY_NAME.pem $ANSIBLE_PLAYBOOK
                     '''
@@ -84,7 +82,6 @@ pipeline {
     post {
         always {
             echo 'Cleaning up...'
-            // Optionally terminate the EC2 instance
             sh "aws ec2 terminate-instances --instance-ids $INSTANCE_ID"
         }
     }
