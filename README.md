@@ -17,4 +17,4 @@ Beyond my professional pursuits, my interests in photography and music further c
 
 ## Tech Stack
 
-[![My Skills](https://skillicons.dev/icons?i=linux,aws,kubernetes,docker,gcp,ansible,grafana,gitlab,jenkins,azure)](https://skillicons.dev)
+[![My Skills](https://skillicons.dev/icons?i=linux,aws,kubernetes,docker,gcp,terraform,ansible,grafana,gitlab,jenkins,azure,py,bash,bitbucket,git,github,githubactions,nginx,postman,raspberrypi,vim,debian,redhat,ubuntu,mint)](https://skillicons.dev)
